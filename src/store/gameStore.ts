@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Difficulty, GameState, GameStatus, Player, GameMode, MoveRecord, RecentGame } from '@/types/game';
 import { createEmptyBoard, checkWinner, isBoardFull, makeMove, copyBoard } from '@/utils/gameLogic';
-import { getAIMove } from '@/utils/ai';
+import { getAIMove, getHintMove } from '@/utils/ai';
 import { loadStats, saveStats, loadRecentGames, addRecentGame, deleteRecentGame, clearRecentGames } from '@/utils/storage';
 
 interface GameStore extends GameState {
@@ -170,7 +170,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       history: newHistory,
       moves: newMoves,
       canUndo: !undoUsed && newHistory.length >= 2,
-      hintCell: null,
     });
 
     if (newStatus !== 'playing') {
@@ -260,7 +259,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (hintUsed) return;
     if (difficulty === 'easy') return;
 
-    const [row, col] = getAIMove(board, difficulty);
+    const [row, col] = getHintMove(board, difficulty);
     
     set({
       hintCell: [row, col],

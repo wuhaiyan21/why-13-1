@@ -10,17 +10,19 @@ const getRandomMove = (board: Board): [number, number] => {
   return emptyCells[randomIndex];
 };
 
-const minimax = (
+const minimaxForPlayer = (
   board: Board,
   depth: number,
   isMaximizing: boolean,
   alpha: number,
-  beta: number
+  beta: number,
+  player: Player
 ): number => {
+  const opponent: Player = player === 'X' ? 'O' : 'X';
   const winner = checkWinner(board);
   
   if (winner) {
-    return winner.winner === computerPlayer ? 10 - depth : depth - 10;
+    return winner.winner === player ? 10 - depth : depth - 10;
   }
   
   if (isBoardFull(board)) {
@@ -32,8 +34,8 @@ const minimax = (
     const emptyCells = getEmptyCells(board);
     
     for (const [row, col] of emptyCells) {
-      const newBoard = makeMove(board, row, col, computerPlayer);
-      const evalScore = minimax(newBoard, depth + 1, false, alpha, beta);
+      const newBoard = makeMove(board, row, col, player);
+      const evalScore = minimaxForPlayer(newBoard, depth + 1, false, alpha, beta, player);
       maxEval = Math.max(maxEval, evalScore);
       alpha = Math.max(alpha, evalScore);
       if (beta <= alpha) break;
@@ -45,8 +47,8 @@ const minimax = (
     const emptyCells = getEmptyCells(board);
     
     for (const [row, col] of emptyCells) {
-      const newBoard = makeMove(board, row, col, humanPlayer);
-      const evalScore = minimax(newBoard, depth + 1, true, alpha, beta);
+      const newBoard = makeMove(board, row, col, opponent);
+      const evalScore = minimaxForPlayer(newBoard, depth + 1, true, alpha, beta, player);
       minEval = Math.min(minEval, evalScore);
       beta = Math.min(beta, evalScore);
       if (beta <= alpha) break;
@@ -56,14 +58,14 @@ const minimax = (
   }
 };
 
-const getBestMove = (board: Board): [number, number] => {
+const getBestMoveForPlayer = (board: Board, player: Player): [number, number] => {
   let bestScore = -Infinity;
   let bestMove: [number, number] = [-1, -1];
   const emptyCells = getEmptyCells(board);
   
   for (const [row, col] of emptyCells) {
-    const newBoard = makeMove(board, row, col, computerPlayer);
-    const score = minimax(newBoard, 0, false, -Infinity, Infinity);
+    const newBoard = makeMove(board, row, col, player);
+    const score = minimaxForPlayer(newBoard, 0, false, -Infinity, Infinity, player);
     if (score > bestScore) {
       bestScore = score;
       bestMove = [row, col];
@@ -73,18 +75,28 @@ const getBestMove = (board: Board): [number, number] => {
   return bestMove;
 };
 
-const getMediumMove = (board: Board): [number, number] => {
-  const winningMove = findWinningMove(board, computerPlayer);
+const getMediumMoveForPlayer = (board: Board, player: Player): [number, number] => {
+  const opponent: Player = player === 'X' ? 'O' : 'X';
+  
+  const winningMove = findWinningMove(board, player);
   if (winningMove) {
     return winningMove;
   }
   
-  const blockingMove = findWinningMove(board, humanPlayer);
+  const blockingMove = findWinningMove(board, opponent);
   if (blockingMove) {
     return blockingMove;
   }
   
   return getRandomMove(board);
+};
+
+const getBestMove = (board: Board): [number, number] => {
+  return getBestMoveForPlayer(board, computerPlayer);
+};
+
+const getMediumMove = (board: Board): [number, number] => {
+  return getMediumMoveForPlayer(board, computerPlayer);
 };
 
 export const getAIMove = (board: Board, difficulty: Difficulty): [number, number] => {
@@ -95,6 +107,19 @@ export const getAIMove = (board: Board, difficulty: Difficulty): [number, number
       return getMediumMove(board);
     case 'hard':
       return getBestMove(board);
+    default:
+      return getRandomMove(board);
+  }
+};
+
+export const getHintMove = (board: Board, difficulty: Difficulty): [number, number] => {
+  switch (difficulty) {
+    case 'easy':
+      return getRandomMove(board);
+    case 'medium':
+      return getMediumMoveForPlayer(board, humanPlayer);
+    case 'hard':
+      return getBestMoveForPlayer(board, humanPlayer);
     default:
       return getRandomMove(board);
   }
