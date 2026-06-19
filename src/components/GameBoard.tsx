@@ -20,7 +20,15 @@ export const GameBoard: React.FC = () => {
   };
 
   const handleCellClick = useCallback((row: number, col: number) => {
-    if (status !== 'playing' || currentPlayer !== 'X') return;
+    if (status !== 'playing') {
+      showErrorMessage('游戏已结束，请开启新游戏');
+      return;
+    }
+
+    if (currentPlayer !== 'X') {
+      showErrorMessage('电脑正在思考中，请稍候...');
+      return;
+    }
 
     if (board[row][col] !== null) {
       setShakingCell(`${row}-${col}`);

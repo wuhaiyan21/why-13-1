@@ -1,0 +1,7 @@
+services:
+  tic-tac-toe:
+    build: .
+    container_name: tic-tac-toe-nginx
+    ports:
+      - "3003:80"
+    restart: unless-stopped
