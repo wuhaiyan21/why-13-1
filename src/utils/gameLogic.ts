@@ -1,4 +1,4 @@
-import type { Board, CellValue, Player } from '@/types/game';
+import type { Board, Player } from '@/types/game';
 
 export const createEmptyBoard = (): Board => {
   return Array(3).fill(null).map(() => Array(3).fill(null));
